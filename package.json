@@ -1,15 +1,15 @@
 {
   "name": "zerostep-monorepo",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ZeroStep-AI/zerostep.git"
+    "url": "git+https://github.com/zeroStep-ai/zerostep.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ZeroStep-AI/zerostep/issues"
+    "url": "https://github.com/zeroStep-ai/zerostep/issues"
   },
-  "homepage": "https://github.com/ZeroStep-AI/zerostep#readme"
+  "homepage": "https://github.com/zeroStep-ai/zerostep#readme"
 }

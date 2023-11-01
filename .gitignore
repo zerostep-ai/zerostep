@@ -1,0 +1,12 @@
+# misc
+.DS_Store
+
+# playwright
+packages/playwright/lib
+packages/playwright/node_modules
+
+# playwright-demo
+packages/playwright-demo/node_modules
+packages/playwright-demo/test-results
+packages/playwright-demo/playwright-report
+packages/playwright-demo/playwright/.cache
