@@ -1,0 +1,6 @@
+# Ignores everything (except for package.json, CHANGELOG, LICENSE and README) https://docs.npmjs.com/misc/developers
+**/*
+
+# Include the lib itself
+!lib/**/*.js
+!LICENSE.md

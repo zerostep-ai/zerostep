@@ -1,0 +1,14 @@
+{
+  "name": "playwright-demo",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "test": "npx playwright test",
+    "test-ui": "npx playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.39.0",
+    "@types/node": "^20.8.6",
+    "@zerostep/playwright": "../../packages/playwright"
+  }
+}
