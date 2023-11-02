@@ -1,4 +1,5 @@
-src
-node_modules
-tsconfig.json
-package-lock.json
+# Ignores everything (except for package.json, CHANGELOG, LICENSE and README) https://docs.npmjs.com/misc/developers
+**/*
+
+# Include the lib itself
+!lib/**/*.js
