@@ -1,4 +1,4 @@
-import { type Page } from './types.js'
+import { type Page, type ElementHandle, type Frame } from './types.js'
 import * as cdp from './cdp.js'
 
 export const clickElement = async (page: Page, args: { id: string }) => {
@@ -87,6 +87,29 @@ export const scrollPage = async (page: Page, args: { target: ScrollType }) => {
         throw Error(`Unsupported scroll target ${evalArgs.target}`)
     }
   }, args)
+}
+
+export const getElementAtLocation = async (page: Page | Frame, args: { x: number, y: number }): Promise<null | ElementHandle<Element>> => {
+  const handle = await page.evaluateHandle(({ x, y }) => document.elementFromPoint(x, y), args)
+  const element = handle.asElement()
+  if (!element) {
+    return null
+  }
+
+  const tagName = (await element.getProperty('tagName'))?.toString()
+
+  if (tagName === 'IFRAME') {
+    const frame = await element.contentFrame()
+    if (frame) {
+      const boundingClientRect = await element.evaluate((node) => node.getBoundingClientRect())
+      return await getElementAtLocation(frame, {
+        x: args.x - boundingClientRect.x,
+        y: args.y - boundingClientRect.y,
+      })
+    }
+  }
+
+  return element
 }
 
 export type ScrollType =
