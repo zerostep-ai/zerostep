@@ -17,17 +17,38 @@ export const hoverElement = async (page: Page, args: { id: string }) => {
   await hoverLocation(page, { x: centerX, y: centerY })
 }
 
-export const clickLocation = async (page: Page, args: { x: number, y: number }) => {
-  await hoverLocation(page, args)
-  await page.mouse.click(args.x, args.y)
-}
-
 export const sendKeys = async (page: Page, args: { value: string }) => {
   await page.keyboard.type(args.value)
 }
 
+export const clickLocation = async (page: Page, args: { x: number, y: number }) => {
+  const element = await getElementAtLocation(page, args)
+  if (!element) {
+    throw Error(`Unable to find element at ${args.x}, ${args.y}`)
+  }
+
+  await element.hover()
+  await element.click()
+}
+
 export const hoverLocation = async (page: Page, args: { x: number, y: number }) => {
-  await page.mouse.move(args.x, args.y)
+  const element = await getElementAtLocation(page, args)
+  if (!element) {
+    throw Error(`Unable to find element at ${args.x}, ${args.y}`)
+  }
+
+  await element.hover()
+}
+
+export const clickAndInputLocation = async (page: Page, args: { x: number, y: number, value: string }) => {
+  const element = await getElementAtLocation(page, args)
+  if (!element) {
+    throw Error(`Unable to find element at ${args.x}, ${args.y}`)
+  }
+
+  await element.hover()
+  await element.click()
+  await element.fill(args.value)
 }
 
 export const getViewportMetadata = async (page: Page) => {
@@ -43,7 +64,7 @@ export const getViewportMetadata = async (page: Page) => {
 }
 
 export const getScreenshot = async (page: Page) => {
-  const buffer = await page.screenshot()
+  const buffer = await page.screenshot({ scale: 'css' })
   return buffer.toString('base64')
 }
 

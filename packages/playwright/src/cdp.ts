@@ -1,4 +1,4 @@
-import { type Page, type Protocol} from './types.js'
+import { type Page } from './types.js'
 import { WEBDRIVER_ELEMENT_KEY } from './config.js'
 
 let cdpSessionByPage = new Map<Page, CDPSession>()
@@ -62,12 +62,6 @@ export const get = async (page: Page, args: { url: string }) => {
   })
 }
 
-export const resolveNode = async (page: Page, args: Protocol.DOM.resolveNodeParameters) => {
-  const cdpSession = await getCDPSession(page)
-  const resolvedNodeAsObject = await cdpSession.send('DOM.resolveNode', args)
-  return resolvedNodeAsObject.object
-}
-
 export const runFunctionOn = async (page: Page, args: { functionDeclaration: string, objectId: string }) => {
   const cdpSession = await getCDPSession(page)
   await cdpSession.send('Runtime.callFunctionOn', {
@@ -78,7 +72,10 @@ export const runFunctionOn = async (page: Page, args: { functionDeclaration: str
 
 export const getDOMSnapshot = async (page: Page) => {
   const cdpSession = await getCDPSession(page)
-  const returnValue = await cdpSession.send('DOMSnapshot.captureSnapshot', { computedStyles: [] })
+  const returnValue = await cdpSession.send('DOMSnapshot.captureSnapshot', {
+    computedStyles: ['background-color', 'visibility', 'opacity', 'z-index'],
+    includePaintOrder: true
+  })
   return returnValue
 }
 
@@ -163,7 +160,7 @@ export const clickElement = async (page: Page, args: { id: string }) => {
   return true
 }
 
-export const getContentQuads = async (page: Page, args: Protocol.DOM.getContentQuadsParameters) => {
+export const getContentQuads = async (page: Page, args: { backendNodeId: number }) => {
   const cdpSession = await getCDPSession(page)
   const quadsResponse = await cdpSession.send('DOM.getContentQuads', args)
 
@@ -189,7 +186,7 @@ export const getContentQuads = async (page: Page, args: Protocol.DOM.getContentQ
   }
 }
 
-export const focusElement = async (page: Page, args: Protocol.DOM.focusParameters) => {
+export const focusElement = async (page: Page, args: { backendNodeId: number }) => {
   const cdpSession = await getCDPSession(page)
   await cdpSession.send('DOM.focus', args)
 }
