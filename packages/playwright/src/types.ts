@@ -1,9 +1,8 @@
-import { type TestType } from '@playwright/test/types/test'
-import { type Page } from '@playwright/test/types/types'
+import { type TestType } from '@playwright/test'
+import { type Page } from '@playwright/test'
 
-export { type Protocol } from '@playwright/test/types/protocol.js'
-export { type TestType } from '@playwright/test/types/test'
-export { type Page, type ElementHandle, type Frame } from '@playwright/test/types/types'
+export { type TestType } from '@playwright/test'
+export { type Page, type ElementHandle, type Frame } from '@playwright/test'
 
 // These are subtypes of our internal types that attempt to make
 // interacting with our API easier. They are less restrictive and

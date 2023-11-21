@@ -148,6 +148,7 @@ const runCommandsToCompletion = async (page: Page, test: TestType<any, any>, tas
  */
 const executeCommand = async (page: Page, command: CommandRequestZeroStepMessage): Promise<any> => {
   switch (command.name) {
+    // CDP
     case 'getDOMSnapshot':
       return await cdp.getDOMSnapshot(page)
     case 'executeScript':
@@ -172,26 +173,36 @@ const executeCommand = async (page: Page, command: CommandRequestZeroStepMessage
       return await cdp.scrollIntoView(page, command.arguments as { id: string })
     case 'currentUrl':
       return await cdp.getCurrentUrl(page)
+
+    // Queries
+    case 'snapshot':
+      return await playwright.getSnapshot(page)
+
+    // Actions (CDP)
     case 'clickElement':
       return await playwright.clickElement(page, command.arguments as { id: string })
     case 'sendKeysToElement':
       return await playwright.sendKeysToElement(page, command.arguments as { id: string, value: string })
     case 'hoverElement':
       return await playwright.hoverElement(page, command.arguments as { id: string })
-    case 'clickLocation':
-      return await playwright.clickLocation(page, command.arguments as { x: number, y: number })
+
+    // Actions (Devices)
     case 'sendKeys':
       return await playwright.sendKeys(page, command.arguments as { value: string })
-    case 'hoverLocation':
-      return await playwright.hoverLocation(page, command.arguments as { x: number, y: number })
     case 'keypressEnter':
       return await playwright.keypressEnter(page)
     case 'navigate':
       return await playwright.navigate(page, command.arguments as { url: string })
     case 'scrollPage':
       return await playwright.scrollPage(page, command.arguments as { target: playwright.ScrollType })
-    case 'snapshot':
-      return await playwright.getSnapshot(page)
+
+    // Actions (Locators)
+    case 'clickLocation':
+      return await playwright.clickLocation(page, command.arguments as { x: number, y: number })
+    case 'hoverLocation':
+      return await playwright.hoverLocation(page, command.arguments as { x: number, y: number })
+    case 'clickAndInputLocation':
+      return await playwright.clickAndInputLocation(page, command.arguments as { x: number, y: number, value: string })
     case 'getElementAtLocation':
       return await playwright.getElementAtLocation(page, command.arguments as { x: number, y: number })
 
