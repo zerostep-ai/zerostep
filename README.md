@@ -168,6 +168,10 @@ npm install
 $ npm run test # or npm run test-ui
 ```
 
+## Community
+
+Have questions or suggestions? [Join our Discord](https://discord.gg/BcDmfWqSGe)!
+
 <br>
 <br>
 <div align="center">
