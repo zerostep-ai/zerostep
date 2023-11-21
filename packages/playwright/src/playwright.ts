@@ -42,9 +42,14 @@ export const getViewportMetadata = async (page: Page) => {
   return metadata
 }
 
+export const getScreenshot = async (page: Page) => {
+  const buffer = await page.screenshot()
+  return buffer.toString('base64')
+}
+
 export const getSnapshot = async (page: Page) => {
   const domSnapshotPromise = cdp.getDOMSnapshot(page).then((r) => JSON.stringify(r))
-  const screenshotPromise = cdp.getScreenshot(page)
+  const screenshotPromise = getScreenshot(page)
   const layoutMetricsPromise = cdp.getLayoutMetrics(page)
   const viewportPromise = getViewportMetadata(page)
 
