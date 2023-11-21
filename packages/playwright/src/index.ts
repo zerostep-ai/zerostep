@@ -192,6 +192,8 @@ const executeCommand = async (page: Page, command: CommandRequestZeroStepMessage
       return await playwright.scrollPage(page, command.arguments as { target: playwright.ScrollType })
     case 'snapshot':
       return await playwright.getSnapshot(page)
+    case 'getElementAtLocation':
+      return await playwright.getElementAtLocation(page, command.arguments as { x: number, y: number })
 
     default:
       throw Error(`Unsupported command ${command.name}`)
