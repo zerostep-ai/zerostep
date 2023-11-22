@@ -4,3 +4,4 @@
 # Include the lib itself
 !lib/**/*.js
 !LICENSE.md
+!CHANGELOG.md
