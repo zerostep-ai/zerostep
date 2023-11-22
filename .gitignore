@@ -4,6 +4,7 @@
 # playwright
 packages/playwright/lib
 packages/playwright/node_modules
+packages/playwright/tmp.README.md
 
 # examples
 examples/playwright-demo/package-lock.json

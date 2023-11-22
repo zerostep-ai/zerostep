@@ -19,8 +19,8 @@ export const clickAndInputCDPElement = async (page: Page, args: { id: string, va
 
 // Actions using Location
 export const hoverLocation = async (page: Page, args: { x: number, y: number }) => {
-  const { element, tagName } = await getElementAtLocation(page, args)
-  if (tagName === 'CANVAS') {
+  const { element, tagName, isCustomElement } = await getElementAtLocation(page, args)
+  if (tagName === 'CANVAS' || isCustomElement) {
     await hover(page, args)
   } else {
     await hoverElement(page, { element })
@@ -28,8 +28,8 @@ export const hoverLocation = async (page: Page, args: { x: number, y: number }) 
 }
 
 export const clickLocation = async (page: Page, args: { x: number, y: number }) => {
-  const { element, tagName } = await getElementAtLocation(page, args)
-  if (tagName === 'CANVAS') {
+  const { element, tagName, isCustomElement } = await getElementAtLocation(page, args)
+  if (tagName === 'CANVAS' || isCustomElement) {
     await click(page, args)
   } else {
     await clickElement(page, { element })
@@ -37,8 +37,16 @@ export const clickLocation = async (page: Page, args: { x: number, y: number }) 
 }
 
 export const clickAndInputLocation = async (page: Page, args: { x: number, y: number, value: string }) => {
-  const { element } = await getElementAtLocation(page, args)
-  await clickAndInputElement(page, { element, value: args.value })
+  const { element, isCustomElement } = await getElementAtLocation(page, args)
+  if (isCustomElement) {
+    await hover(page, args)
+    await click(page, args)
+    await keypressSelectAll(page)
+    await keypressBackspace(page)
+    await input(page, args)
+  } else {
+    await clickAndInputElement(page, { element, value: args.value })
+  }
 }
 
 // Actions using Element
@@ -73,6 +81,14 @@ export const input = async (page: Page, args: { value: string }) => {
 
 export const keypressEnter = async (page: Page) => {
   await page.keyboard.press('Enter')
+}
+
+export const keypressSelectAll = async (page: Page) => {
+  await page.keyboard.press('Meta+A')
+}
+
+export const keypressBackspace = async (page: Page) => {
+  await page.keyboard.press('Backspace')
 }
 
 export const navigate = async (page: Page, args: { url: string }) => {
@@ -132,7 +148,11 @@ export const getSnapshot = async (page: Page) => {
   return { dom, screenshot, viewportWidth, viewportHeight, pixelRatio, layoutMetrics }
 }
 
-export const getElementAtLocation = async (page: Page | Frame, args: { x: number, y: number }): Promise<{ element: ElementHandle<Element>, tagName: string }> => {
+export const getElementAtLocation = async (page: Page | Frame, args: { x: number, y: number }): Promise<{
+  element: ElementHandle<Element>,
+  tagName: string,
+  isCustomElement: boolean,
+}> => {
   const handle = await page.evaluateHandle(({ x, y }) => document.elementFromPoint(x, y), args)
   const element = handle.asElement()
   if (!element) {
@@ -152,9 +172,12 @@ export const getElementAtLocation = async (page: Page | Frame, args: { x: number
     }
   }
 
+  const isCustomElement = tagName.includes('-')
+
   return {
     element,
     tagName,
+    isCustomElement,
   }
 }
 
