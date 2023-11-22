@@ -1,87 +1,74 @@
 import { type Page, type ElementHandle, type Frame } from './types.js'
 import * as cdp from './cdp.js'
 
-export const clickElement = async (page: Page, args: { id: string }) => {
-  const { centerX, centerY } = await cdp.getContentQuads(page, { backendNodeId: parseInt(args.id) })
-  await clickLocation(page, { x: centerX, y: centerY })
-}
-
-export const sendKeysToElement = async (page: Page, args: { id: string, value: string }) => {
-  await cdp.focusElement(page, { backendNodeId: parseInt(args.id) })
-  await cdp.clearElement(page, args)
-  await sendKeys(page, args)
-}
-
-export const hoverElement = async (page: Page, args: { id: string }) => {
+// Actions using CDP Element
+export const hoverCDPElement = async (page: Page, args: { id: string }) => {
   const { centerX, centerY } = await cdp.getContentQuads(page, { backendNodeId: parseInt(args.id) })
   await hoverLocation(page, { x: centerX, y: centerY })
 }
 
-export const sendKeys = async (page: Page, args: { value: string }) => {
-  await page.keyboard.type(args.value)
+export const clickCDPElement = async (page: Page, args: { id: string }) => {
+  const { centerX, centerY } = await cdp.getContentQuads(page, { backendNodeId: parseInt(args.id) })
+  await clickLocation(page, { x: centerX, y: centerY })
+}
+
+export const clickAndInputCDPElement = async (page: Page, args: { id: string, value: string }) => {
+  const { centerX, centerY } = await cdp.getContentQuads(page, { backendNodeId: parseInt(args.id) })
+  await clickAndInputLocation(page, { x: centerX, y: centerY, value: args.value })
+}
+
+// Actions using Location
+export const hoverLocation = async (page: Page, args: { x: number, y: number }) => {
+  const { element, tagName } = await getElementAtLocation(page, args)
+  if (tagName === 'CANVAS') {
+    await hover(page, args)
+  } else {
+    await hoverElement(page, { element })
+  }
 }
 
 export const clickLocation = async (page: Page, args: { x: number, y: number }) => {
-  const element = await getElementAtLocation(page, args)
-  if (!element) {
-    throw Error(`Unable to find element at ${args.x}, ${args.y}`)
+  const { element, tagName } = await getElementAtLocation(page, args)
+  if (tagName === 'CANVAS') {
+    await click(page, args)
+  } else {
+    await clickElement(page, { element })
   }
-
-  await element.hover()
-  await element.click()
-}
-
-export const hoverLocation = async (page: Page, args: { x: number, y: number }) => {
-  const element = await getElementAtLocation(page, args)
-  if (!element) {
-    throw Error(`Unable to find element at ${args.x}, ${args.y}`)
-  }
-
-  await element.hover()
 }
 
 export const clickAndInputLocation = async (page: Page, args: { x: number, y: number, value: string }) => {
-  const element = await getElementAtLocation(page, args)
-  if (!element) {
-    throw Error(`Unable to find element at ${args.x}, ${args.y}`)
-  }
-
-  await element.hover()
-  await element.click()
-  await element.fill(args.value)
+  const { element } = await getElementAtLocation(page, args)
+  await clickAndInputElement(page, { element, value: args.value })
 }
 
-export const getViewportMetadata = async (page: Page) => {
-  const metadata = await page.evaluate(() => {
-    return {
-      viewportWidth: window.visualViewport?.width || 0,
-      viewportHeight: window.visualViewport?.height || 0,
-      pixelRatio: window.devicePixelRatio,
-    }
-  })
-
-  return metadata
+// Actions using Element
+export const hoverElement = async (page: Page, args: { element: ElementHandle<Element> }) => {
+  await args.element.hover()
 }
 
-export const getScreenshot = async (page: Page) => {
-  const buffer = await page.screenshot({ scale: 'css' })
-  return buffer.toString('base64')
+export const clickElement = async (page: Page, args: { element: ElementHandle<Element> }) => {
+  await args.element.hover()
+  await args.element.click()
 }
 
-export const getSnapshot = async (page: Page) => {
-  const domSnapshotPromise = cdp.getDOMSnapshot(page).then((r) => JSON.stringify(r))
-  const screenshotPromise = getScreenshot(page)
-  const layoutMetricsPromise = cdp.getLayoutMetrics(page)
-  const viewportPromise = getViewportMetadata(page)
+export const clickAndInputElement = async (page: Page, args: { element: ElementHandle<Element>, value: string }) => {
+  await args.element.hover()
+  await args.element.click()
+  await args.element.fill(args.value)
+}
 
-  const [
-    dom,
-    screenshot,
-    { viewportWidth, viewportHeight, pixelRatio },
-    layoutMetrics,
-  ] = await Promise.all([domSnapshotPromise, screenshotPromise, viewportPromise, layoutMetricsPromise])
+// Actions using Device
+export const hover = async (page: Page, args: { x: number, y: number }) => {
+  await page.mouse.move(args.x, args.y)
+}
 
-  return { dom, screenshot, viewportWidth, viewportHeight, pixelRatio, layoutMetrics }
+export const click = async (page: Page, args: { x: number, y: number }) => {
+  await page.mouse.move(args.x, args.y)
+  await page.mouse.click(args.x, args.y)
+}
+
+export const input = async (page: Page, args: { value: string }) => {
+  await page.keyboard.type(args.value)
 }
 
 export const keypressEnter = async (page: Page) => {
@@ -92,7 +79,8 @@ export const navigate = async (page: Page, args: { url: string }) => {
   await page.goto(args.url)
 }
 
-export const scrollPage = async (page: Page, args: { target: ScrollType }) => {
+// Actions using Script
+export const scrollPageScript = async (page: Page, args: { target: ScrollType }) => {
   await page.evaluate((evalArgs) => {
     // The viewport should be defined, but if it somehow isn't pick a reasonable default
     const viewportHeight = window.visualViewport?.height ?? 720
@@ -115,11 +103,40 @@ export const scrollPage = async (page: Page, args: { target: ScrollType }) => {
   }, args)
 }
 
-export const getElementAtLocation = async (page: Page | Frame, args: { x: number, y: number }): Promise<null | ElementHandle<Element>> => {
+// Meta
+export const getViewportMetadata = async (page: Page) => {
+  const metadata = await page.evaluate(() => {
+    return {
+      viewportWidth: window.visualViewport?.width || 0,
+      viewportHeight: window.visualViewport?.height || 0,
+      pixelRatio: window.devicePixelRatio,
+    }
+  })
+
+  return metadata
+}
+
+export const getSnapshot = async (page: Page) => {
+  const domSnapshotPromise = cdp.getDOMSnapshot(page).then((r) => JSON.stringify(r))
+  const screenshotPromise = page.screenshot({ scale: 'css' }).then((b) => b.toString('base64'))
+  const layoutMetricsPromise = cdp.getLayoutMetrics(page)
+  const viewportPromise = getViewportMetadata(page)
+
+  const [
+    dom,
+    screenshot,
+    { viewportWidth, viewportHeight, pixelRatio },
+    layoutMetrics,
+  ] = await Promise.all([domSnapshotPromise, screenshotPromise, viewportPromise, layoutMetricsPromise])
+
+  return { dom, screenshot, viewportWidth, viewportHeight, pixelRatio, layoutMetrics }
+}
+
+export const getElementAtLocation = async (page: Page | Frame, args: { x: number, y: number }): Promise<{ element: ElementHandle<Element>, tagName: string }> => {
   const handle = await page.evaluateHandle(({ x, y }) => document.elementFromPoint(x, y), args)
   const element = handle.asElement()
   if (!element) {
-    return null
+    throw Error(`Unable to find element at ${args.x}, ${args.y}`)
   }
 
   const tagName = (await element.getProperty('tagName'))?.toString()
@@ -135,7 +152,10 @@ export const getElementAtLocation = async (page: Page | Frame, args: { x: number
     }
   }
 
-  return element
+  return {
+    element,
+    tagName,
+  }
 }
 
 export type ScrollType =

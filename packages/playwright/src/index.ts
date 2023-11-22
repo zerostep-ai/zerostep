@@ -92,11 +92,7 @@ const sendTaskStartMessage = async (page: Page, task: string, taskId: string, op
     taskId,
     task,
     snapshot,
-    options: options ? {
-      debug: options.debug ?? false,
-      disableScroll: options.disableScroll ?? false,
-      type: options.type,
-    } : undefined,
+    options,
   }
 
   await webSocket.sendWebSocketMessage(message)
@@ -135,7 +131,19 @@ const runCommandsToCompletion = async (page: Page, test: TestType<any, any>, tas
             break
           case 'task-complete':
             removeListener()
-            resolve(data)
+            // If there was a response in the completion, print it as
+            // a test step in the actions list.
+            if (data.result?.assertion !== undefined) {
+              test.step(`${PACKAGE_NAME}.assertion ${data.result.assertion}`, async () => {
+                resolve(data)
+              })
+            } else if (data.result?.query !== undefined) {
+              test.step(`${PACKAGE_NAME}.response ${data.result.query}`, async () => {
+                resolve(data)
+              })
+            } else {
+              resolve(data)
+            }
             break
         }
       }
@@ -178,25 +186,15 @@ const executeCommand = async (page: Page, command: CommandRequestZeroStepMessage
     case 'snapshot':
       return await playwright.getSnapshot(page)
 
-    // Actions (CDP)
+    // Actions using CDP Element
     case 'clickElement':
-      return await playwright.clickElement(page, command.arguments as { id: string })
+      return await playwright.clickCDPElement(page, command.arguments as { id: string })
     case 'sendKeysToElement':
-      return await playwright.sendKeysToElement(page, command.arguments as { id: string, value: string })
+      return await playwright.clickAndInputCDPElement(page, command.arguments as { id: string, value: string })
     case 'hoverElement':
-      return await playwright.hoverElement(page, command.arguments as { id: string })
+      return await playwright.hoverCDPElement(page, command.arguments as { id: string })
 
-    // Actions (Devices)
-    case 'sendKeys':
-      return await playwright.sendKeys(page, command.arguments as { value: string })
-    case 'keypressEnter':
-      return await playwright.keypressEnter(page)
-    case 'navigate':
-      return await playwright.navigate(page, command.arguments as { url: string })
-    case 'scrollPage':
-      return await playwright.scrollPage(page, command.arguments as { target: playwright.ScrollType })
-
-    // Actions (Locators)
+    // Actions using Location
     case 'clickLocation':
       return await playwright.clickLocation(page, command.arguments as { x: number, y: number })
     case 'hoverLocation':
@@ -205,6 +203,18 @@ const executeCommand = async (page: Page, command: CommandRequestZeroStepMessage
       return await playwright.clickAndInputLocation(page, command.arguments as { x: number, y: number, value: string })
     case 'getElementAtLocation':
       return await playwright.getElementAtLocation(page, command.arguments as { x: number, y: number })
+
+    // Actions using Device
+    case 'sendKeys':
+      return await playwright.input(page, command.arguments as { value: string })
+    case 'keypressEnter':
+      return await playwright.keypressEnter(page)
+    case 'navigate':
+      return await playwright.navigate(page, command.arguments as { url: string })
+
+    // Actions using Script
+    case 'scrollPage':
+      return await playwright.scrollPageScript(page, command.arguments as { target: playwright.ScrollType })
 
     default:
       throw Error(`Unsupported command ${command.name}`)
