@@ -21,12 +21,9 @@ test.describe('Calendly', () => {
 test.describe('GitHub', () => {
   test('verify the number of labels in a repo', async ({ page }) => {
     await page.goto('https://github.com/zerostep-ai/zerostep')
+
     await ai(`Click on the Issues tabs`, { page, test })
-
-    await page.waitForURL('https://github.com/zerostep-ai/zerostep/issues')
     await ai('Click on Labels', { page, test })
-
-    await page.waitForURL('https://github.com/zerostep-ai/zerostep/labels')
     const numLabels = await ai('How many labels are listed?', { page, test }) as string
 
     expect(parseInt(numLabels)).toEqual(9)
@@ -38,6 +35,7 @@ test.describe('Google', () => {
 
   test('search and verify the first organic search result', async ({ page }) => {
     await page.goto('https://www.google.com')
+
     await ai(`Search for '${searchTerm}'`, { page, test })
     await ai('Hit enter', { page, test })
 
@@ -55,8 +53,6 @@ test.describe('New York Times', () => {
 
     await ai(`Hover over the World top nav item`, { page, test })
     await ai('Click the "World" section', { page, test })
-
-    await page.waitForURL('https://www.nytimes.com/section/world')
     const cta = await ai('What is the CTA of the ad at the top of the page?', { page, test })
 
     console.log('Call to action is: ', cta)
@@ -66,12 +62,9 @@ test.describe('New York Times', () => {
 test.describe('Wikipedia', () => {
   test('view article history and verify earliest revision', async ({ page }) => {
     await page.goto('https://en.wikipedia.org/wiki/Software_testing')
+
     await ai(`Click on "View history" link`, { page, test })
-
-    await page.waitForURL('https://en.wikipedia.org/w/index.php?title=Software_testing&action=history')
     await ai('Sort by "oldest"', { page, test })
-
-    await page.waitForURL('https://en.wikipedia.org/w/index.php?title=Software_testing&action=history&dir=prev')
     const date = await ai('What is the date of the first revision listed on this page?', { page, test })
 
     expect(date).toEqual('16 April 2004')
