@@ -124,7 +124,8 @@ const runCommandsToCompletion = async (page: Page, test: TestType<any, any>, tas
       if (!data.taskId || data.taskId === taskId) {
         switch (data.type) {
           case 'command-request':
-            test.step(`${PACKAGE_NAME}.action ${data.name}`, async () => {
+            const prettyCommandName = getPrettyCommandName(data.name)
+            test.step(`${PACKAGE_NAME}.action ${prettyCommandName}`, async () => {
               const result = await executeCommand(page, data)
               await sendCommandResolveMessage(data.index, taskId, result)
             })
@@ -254,6 +255,30 @@ const runInParallel: typeof ai = async (tasks, config, options) => {
   }
 
   return allValues
+}
+
+const getPrettyCommandName = (rawCommandName: string) => {
+  switch (rawCommandName) {
+    case 'clickElement':
+    case 'clickLocation':
+      return 'click'
+    case 'sendKeysToElement':
+    case 'clickAndInputLocation':
+    case 'sendKeys':
+      return 'input'
+    case 'hoverElement':
+    case 'hoverLocation':
+      return 'hover'
+    case 'getElementAtLocation':
+      return 'getElement'
+    case 'keypressEnter':
+      return 'pressEnter'
+    case 'getDOMSnapshot':
+    case 'snapshot':
+      return 'analyze'
+    default:
+      return rawCommandName
+  }
 }
 
 type ExecutionOptions = {
