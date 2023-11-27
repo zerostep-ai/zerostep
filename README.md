@@ -134,6 +134,16 @@ try {
 }
 ```
 
+Action prompts will resolve to one or more of the following browser actions:
+- Click
+- Hover
+- Text Input
+- 'Enter' keypress
+- Scroll
+- Navigating to a new URL
+
+Other browser actions such as drag-and-drops and file uploads are not currently supported.
+
 **Query**: A query will return requested data from the visible portion of the page as a string, e.g.
 
 ```ts
@@ -168,6 +178,23 @@ npm install
 ```sh
 $ npm run test # or npm run test-ui
 ```
+
+## Best Practices
+
+ZeroStep AI prompts need not conform to any predefined syntax. However, we recommend following these best practices to
+ensure your prompts work as you intend:
+
+- Write your prompts in complete English sentences with no spelling or grammatical mistakes.
+- Put quotes around any text that should appear exactly as described. e.g. `Click on the "Login" button`
+- Don't include CSS/XPath selectors in your prompt, or any other implementation-level details.
+- Don't combine two or more instructions in the same prompt. e.g.
+  `Click on the Settings icon and then click on the "User Profile" link`. Instead, each prompt should contain one
+  distinct action, query, or assertion.
+   - Note: The exception here is Action prompts that perform a single logical task which is accomplished by multiple
+     actions. In other words, a prompt like `Fill out the form with realistic values` is a perfectly fine prompt.
+- Write prompts to the level of specificity dictated by your requirements. Some level of ambiguity is fine and even
+  desirable in a lot of circumstances. A prompt such as `Click on the "Get Started" link` will work even when there are
+  multiple "Get Started" links on the page, or if the page is completely redesigned.
 
 ## Community
 
