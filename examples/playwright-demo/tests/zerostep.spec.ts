@@ -23,7 +23,11 @@ test.describe('GitHub', () => {
     await page.goto('https://github.com/zerostep-ai/zerostep')
 
     await ai(`Click on the Issues tabs`, { page, test })
+    await page.waitForURL('https://github.com/zerostep-ai/zerostep/issues')
+
     await ai('Click on Labels', { page, test })
+    await page.waitForURL('https://github.com/zerostep-ai/zerostep/labels')
+
     const numLabels = await ai('How many labels are listed?', { page, test }) as string
 
     expect(parseInt(numLabels)).toEqual(9)
