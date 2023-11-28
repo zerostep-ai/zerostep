@@ -4,6 +4,16 @@ Documentation on notable changes to the package and release notes
 
 ---
 
+## [0.1.3](https://www.npmjs.com/package/@zerostep/playwright/v/0.1.3) - 11-28-2023
+
+**What's New**
+
+- Improved error messaging, especially in UI mode
+- Fixes for actions that target `<select>` elements
+- Improved documentation
+
+---
+
 ## [0.1.2](https://www.npmjs.com/package/@zerostep/playwright/v/0.1.2) - 11-22-2023
 
 **What's New**
