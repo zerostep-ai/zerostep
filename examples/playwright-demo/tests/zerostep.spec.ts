@@ -28,7 +28,7 @@ test.describe('Calendly', () => {
     await ai('Dismiss the privacy modal', { page, test })
     await ai('Click on the first day in the month with times available', { page, test })
     await ai('Click on the first available time in the sidebar', { page, test })
-    await ai('Click the Next button', { page, test })
+    await ai('Click the "Next" button', { page, test })
     await ai('Fill out the form with realistic values', { page, test })
     await ai('Submit the form', { page, test })
 
