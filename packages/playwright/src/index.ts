@@ -28,17 +28,17 @@ export const ai = async (task: string | string[], config: { page: APIPage, test:
   // Generate a unique ID that all messages in this exchange will use
   const taskId = uuidv7()
 
-  return new Promise((resolve, reject) => {
-    const { test, page } = config as { page: Page, test: TestType<any, any> }
+  const { test, page } = config as { page: Page, test: TestType<any, any> }
 
+  return new Promise((resolve, reject) => {
     test.step(`${PACKAGE_NAME}.ai '${task}'`, async () => {
       if (!TOKEN) {
-        reject('The $ZEROSTEP_TOKEN environment variable must be defined to execute ai steps. You can '
+        reject(makeErrorMessage('The $ZEROSTEP_TOKEN environment variable must be defined to execute ai steps. You can '
           + 'find your token or sign up for an account at https://app.zerostep.com'
-        )
+        ))
         return
       } else if (task.length > MAX_TASK_CHARS) {
-        reject(`Provided task string is too long, max length is ${MAX_TASK_CHARS} chars.`)
+        reject(makeErrorMessage(`Provided task string is too long, max length is ${MAX_TASK_CHARS} chars`))
         return
       }
 
@@ -49,9 +49,9 @@ export const ai = async (task: string | string[], config: { page: APIPage, test:
       if (options?.debug) {
         resolve(taskCompleteResponse)
       } else if (taskCompleteResponse.errorMessage) {
-        reject(taskCompleteResponse.errorMessage)
+        reject(makeErrorMessage(taskCompleteResponse.errorMessage, taskId))
       } else if (!taskResult && taskCompleteResponse.wasSuccessful === false) {
-        reject('An unknown error occurred when trying to run the ai step')
+        reject(makeErrorMessage('An unknown error occurred when trying to run the ai step', taskId))
       } else if (!taskResult) {
         resolve(undefined)
       } else if (taskResult.assertion !== undefined) {
@@ -59,10 +59,15 @@ export const ai = async (task: string | string[], config: { page: APIPage, test:
       } else if (taskResult.query !== undefined) {
         resolve(taskResult.query)
       } else if (taskResult.actions !== undefined && taskCompleteResponse.wasSuccessful === false) {
-        reject('Could not execute ai step as action')
+        reject(makeErrorMessage('Could not execute ai step as action', taskId))
       } else {
         resolve(undefined)
       }
+    })
+  }).catch((e) => {
+    return test.step(e, async () => {
+      console.error(e)
+      throw e
     })
   })
 }
@@ -79,6 +84,15 @@ export const aiFixture = (test: APITestType) => {
       }
       use(wrapped)
     }
+  }
+}
+
+const makeErrorMessage = (message: string, taskId?: string) => {
+  const prefix = `${PACKAGE_NAME}.error '${message}'.`
+  if (taskId) {
+    return prefix + ` TaskId:${taskId}`
+  } else {
+    return prefix
   }
 }
 
