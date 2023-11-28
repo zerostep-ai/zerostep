@@ -11,40 +11,43 @@ This document outlines the steps to be followed for releasing new versions of Ze
 
 ### 0. Regression Test
 
-- All provided example tests must work before releasing. Run the tests in the examples/ directory
+- On your local machine, switch to the main branch and pull the latest changes.
+- All provided example tests must work before releasing. Run the tests in the `examples/` directory
   and verify they all pass.
 
 ### 1. Update Version in package.json
 
-- On your local machine, switch to the main branch and pull the latest changes.
-- Run the `npm version` command to update the version. This command follows the [Semantic Versioning](https://semver.org/) guidelines. Use one of the following based on the type of release:
-  - `npm version patch` - for a patch release (x.y.z -> x.y.z+1)
-  - `npm version minor` - for a minor release (x.y.z -> x.y+1.0)
-  - `npm version major` - for a major release (x.y.z -> x+1.0.0)
-- This command will automatically update the `package.json` file, commit the changes, and tag the commit.
-- Push the commit and tag to the GitHub repository:
-  ```sh
-  git push && git push --tags;
-  ```
+- Update the version in `package.json` file. Follow [Semantic Versioning](https://semver.org/).
 
 ### 2. Update CHANGELOG
 
 - Update the CHANGELOG.md file to include the new version and release notes.
 - List down the changes made, bugs fixed, or any enhancements.
-- Commit the changes with a message
-  ```sh
-  git add --all && git commit -m 'update changelog for x.y.z release'`;
+- Commit the changes with a message like `bump version to x.y.z`.
+
+### 3. Create Git Tag
+
+- Tag the current commit with the new version number.
+  ```
+  git tag -a v[x.y.z] -m "Release x.y.z"
+  ```
+- Push the tag to the GitHub repository.
+  ```
+  git push origin v[x.y.z]
+  ```
+- Push the main branch
+  ```
+  git push origin main
   ```
 
-### 3. Run Release Script
+### 4. Run Release Script
 
 - Execute the existing release script which builds and publishes to npm.
   ```
   npm run release
   ```
-- Ensure the script runs successfully and the package is published to [npmjs.org](https://www.npmjs.com/package/@zerostep/playwright).
 
-### 4. Create GitHub Release
+### 5. Create GitHub Release
 
 - Go to the ["Draft New Release" page](https://github.com/zerostep-ai/zerostep/releases/new).
 - Select the tag `v[x.y.z]` you just pushed.
