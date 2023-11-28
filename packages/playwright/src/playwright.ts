@@ -37,13 +37,15 @@ export const clickLocation = async (page: Page, args: { x: number, y: number }) 
 }
 
 export const clickAndInputLocation = async (page: Page, args: { x: number, y: number, value: string }) => {
-  const { element, isCustomElement } = await getElementAtLocation(page, args)
+  const { element, isCustomElement, tagName } = await getElementAtLocation(page, args)
   if (isCustomElement) {
     await hover(page, args)
     await click(page, args)
     await keypressSelectAll(page)
     await keypressBackspace(page)
     await input(page, args)
+  } else if (tagName === 'SELECT') {
+    await clickAndSelectOptionElement(page, { element, value: args.value })
   } else {
     await clickAndInputElement(page, { element, value: args.value })
   }
@@ -63,6 +65,12 @@ export const clickAndInputElement = async (page: Page, args: { element: ElementH
   await args.element.hover()
   await args.element.click()
   await args.element.fill(args.value)
+}
+
+export const clickAndSelectOptionElement = async (page: Page, args: { element: ElementHandle<Element>, value: string }) => {
+  await args.element.hover()
+  await args.element.click()
+  await args.element.selectOption(args.value)
 }
 
 // Actions using Device
