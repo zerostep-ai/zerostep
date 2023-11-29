@@ -33,7 +33,8 @@ export const ai = async (task: string | string[], config: { page: APIPage, test:
   return new Promise((resolve, reject) => {
     test.step(`${PACKAGE_NAME}.ai '${task}'`, async () => {
       if (!TOKEN) {
-        reject(makeErrorMessage('The $ZEROSTEP_TOKEN environment variable must be defined to execute ai steps. You can '
+        reject(makeErrorMessage('The $ZEROSTEP_TOKEN environment variable or a zerostep.config.json file with a '
+          + '"TOKEN" field must be defined to execute ai steps. You can '
           + 'find your token or sign up for an account at https://app.zerostep.com'
         ))
         return
