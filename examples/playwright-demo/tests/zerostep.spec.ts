@@ -24,13 +24,14 @@ test.describe('Calendly', () => {
   test('book the next available timeslot', async ({ page }) => {
     await page.goto('https://calendly.com/zerostep-test/test-calendly')
 
-    await ai('Verify that a calendar is displayed', { page, test })
+    await page.waitForSelector('[data-testid="calendar"]')
     await ai('Dismiss the privacy modal', { page, test })
     await ai('Click on the first day in the month with times available', { page, test })
     await ai('Click on the first available time in the sidebar', { page, test })
-    await ai('Click the "Next" button', { page, test })
+    // Alternatively: await ai('Click the "Next" button', { page, test })
+    await page.locator('[data-container="selected-spot"] button:nth-of-type(2)').click()
     await ai('Fill out the form with realistic values', { page, test })
-    await ai('Submit the form', { page, test })
+    await page.getByText('Schedule Event').click()
 
     const element = await page.getByText('You are scheduled')
     expect(element).toBeDefined()
@@ -44,7 +45,8 @@ test.describe('GitHub', () => {
     await ai(`Click on the Issues tabs`, { page, test })
     await page.waitForURL('https://github.com/zerostep-ai/zerostep/issues')
 
-    await ai('Click on Labels', { page, test })
+    // Alternatively: await ai('Click on Labels', { page, test })
+    await page.locator('[role="search"] a[href="/zerostep-ai/zerostep/labels"]').click()
     await page.waitForURL('https://github.com/zerostep-ai/zerostep/labels')
 
     const numLabels = await ai('How many labels are listed?', { page, test }) as string
@@ -60,7 +62,7 @@ test.describe('Google', () => {
     await page.goto('https://www.google.com')
 
     await ai(`Search for '${searchTerm}'`, { page, test })
-    await ai('Hit enter', { page, test })
+    await page.keyboard.press('Enter')
 
     await page.waitForURL('https://www.google.com/search**')
 
@@ -86,7 +88,8 @@ test.describe('Wikipedia', () => {
   test('view article history and verify earliest revision', async ({ page }) => {
     await page.goto('https://en.wikipedia.org/wiki/Software_testing')
 
-    await ai(`Click on "View history" link`, { page, test })
+    // Alternatively: await ai('Click View History', { page, test })
+    await page.locator('#right-navigation #p-views').getByText('View History').click()
     await ai('Sort by "oldest"', { page, test })
     const date = await ai('What is the date of the first revision listed on this page?', { page, test })
 
