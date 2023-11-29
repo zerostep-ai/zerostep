@@ -20,33 +20,41 @@ Supercharge your Playwright tests with AI. Learn more at https://zerostep.com
 ## Setup
 
 1. Install the @zerostep/playwright dependency
-```sh
-$ npm i @zerostep/playwright -D
-```
+   ```sh
+   $ npm i @zerostep/playwright -D
+   ```
 
 2. This package relies on an environment variable with your zerostep token being exposed to
-   the playwright process. This token can be found in your account on
-   https://app.zerostep.com. Do this however you'd like, e.g.
-```sh
-$ export ZEROSTEP_TOKEN="<your token here>"
-```
+   the playwright process, or a config file that holds the token. This token can be found
+   in your account on https://app.zerostep.com. You can expose the environment variable
+   however you'd like, e.g.
+   ```sh
+   $ export ZEROSTEP_TOKEN="<your token here>"
+   ```
+   Alternatively, you can create a `zerostep.config.json` file in the root of your project
+   and store the token there, e.g.
+   ```json
+   {
+     "TOKEN": "<your token here>"
+   }
+   ```
 
 3. Import and use the `ai` function
-```ts
-import { test } from '@playwright/test'
-import { ai } from '@zerostep/playwright'
+   ```ts
+   import { test } from '@playwright/test'
+   import { ai } from '@zerostep/playwright'
 
-test('zerostep example', async ({ page }) => {
-  await page.goto('https://zerostep.com/')
+   test('zerostep example', async ({ page }) => {
+     await page.goto('https://zerostep.com/')
 
-  // An object with page and test must be passed into every call
-  const aiArgs = { page, test }
-  const headerText = await ai('Get the header text', aiArgs)
-  await page.goto('https://google.com/')
-  await ai(`Type "${headerText}" in the search box`, aiArgs)
-  await ai('Press enter', aiArgs)
-})
-```
+     // An object with page and test must be passed into every call
+     const aiArgs = { page, test }
+     const headerText = await ai('Get the header text', aiArgs)
+     await page.goto('https://google.com/')
+     await ai(`Type "${headerText}" in the search box`, aiArgs)
+     await ai('Press enter', aiArgs)
+   })
+   ```
 
 ## Usage
 
@@ -173,7 +181,7 @@ npm run build
 cd ../../examples/playwright-demo
 npm install
 ```
-3. Expose the `ZEROSTEP_TOKEN` environment variable (see the "Setup" section above)
+3. Expose the `ZEROSTEP_TOKEN` environment variable or config value (see the "Setup" section above)
 4. Run the tests, with or without UI mode
 ```sh
 $ npm run test # or npm run test-ui
