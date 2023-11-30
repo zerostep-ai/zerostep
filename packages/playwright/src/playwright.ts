@@ -20,7 +20,7 @@ export const clickAndInputCDPElement = async (page: Page, args: { id: string, va
 // Actions using Location
 export const hoverLocation = async (page: Page, args: { x: number, y: number }) => {
   const { element, tagName, isCustomElement } = await getElementAtLocation(page, args)
-  if (tagName === 'CANVAS' || isCustomElement) {
+  if (!element || tagName === 'CANVAS' || isCustomElement) {
     await hover(page, args)
   } else {
     await hoverElement(page, { element })
@@ -29,7 +29,7 @@ export const hoverLocation = async (page: Page, args: { x: number, y: number }) 
 
 export const clickLocation = async (page: Page, args: { x: number, y: number }) => {
   const { element, tagName, isCustomElement } = await getElementAtLocation(page, args)
-  if (tagName === 'CANVAS' || isCustomElement) {
+  if (!element || tagName === 'CANVAS' || isCustomElement) {
     await click(page, args)
   } else {
     await clickElement(page, { element })
@@ -38,7 +38,7 @@ export const clickLocation = async (page: Page, args: { x: number, y: number }) 
 
 export const clickAndInputLocation = async (page: Page, args: { x: number, y: number, value: string }) => {
   const { element, isCustomElement, tagName } = await getElementAtLocation(page, args)
-  if (isCustomElement) {
+  if (!element || isCustomElement) {
     await hover(page, args)
     await click(page, args)
     await keypressSelectAll(page)
@@ -156,18 +156,25 @@ export const getSnapshot = async (page: Page) => {
   return { dom, screenshot, viewportWidth, viewportHeight, pixelRatio, layoutMetrics }
 }
 
-export const getElementAtLocation = async (page: Page | Frame, args: { x: number, y: number }): Promise<{
-  element: ElementHandle<Element>,
-  tagName: string,
-  isCustomElement: boolean,
+export const getElementAtLocation = async (
+  context: Page | Frame | ElementHandle<ShadowRoot>,
+  args: { x: number, y: number, isShadowRoot?: boolean }
+): Promise<{
+  element: ElementHandle<Element> | null,
+  tagName: string | null,
+  isCustomElement: boolean | null,
 }> => {
-  const handle = await page.evaluateHandle(({ x, y }) => document.elementFromPoint(x, y), args)
+  const handle = args.isShadowRoot
+    ? await (context as ElementHandle<ShadowRoot>).evaluateHandle((e, { x, y }) => Reflect.has(e, 'elementFromPoint') ? e.elementFromPoint(x, y) : null, args)
+    : await (context as (Page | Frame)).evaluateHandle(({ x, y }) => document.elementFromPoint(x, y), args)
+
   const element = handle.asElement()
   if (!element) {
-    throw Error(`Unable to find element at ${args.x}, ${args.y}`)
+    return { element: null, tagName: null, isCustomElement: false }
   }
 
   const tagName = (await element.getProperty('tagName'))?.toString()
+  const isCustomElement = tagName.includes('-')
 
   if (tagName === 'IFRAME') {
     const frame = await element.contentFrame()
@@ -180,7 +187,17 @@ export const getElementAtLocation = async (page: Page | Frame, args: { x: number
     }
   }
 
-  const isCustomElement = tagName.includes('-')
+  if (isCustomElement) {
+    const shadowRootHandle = await element.evaluateHandle((e) => e.shadowRoot)
+    const shadowRoot = shadowRootHandle.asElement()
+    if (shadowRoot) {
+      return await getElementAtLocation(shadowRoot, {
+        x: args.x,
+        y: args.y,
+        isShadowRoot: true,
+      })
+    }
+  }
 
   return {
     element,
