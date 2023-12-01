@@ -91,6 +91,7 @@ export type StepOptions = {
 
 export type TaskStartZeroStepMessage = {
   type: 'task-start',
+  packageVersion?: string,
   taskId?: string,
   task: string,
   snapshot: {
@@ -129,7 +130,8 @@ export type CommandRequestZeroStepMessage = {
 // This message is sent from the client in response to the CommandRequestZeroStepMessage and contains the result of the command.
 export type CommandResponseZeroStepMessage = {
   type: 'command-response',
+  packageVersion?: string,
   taskId?: string,
   index: number,
-  result: any
+  result: any,
 }

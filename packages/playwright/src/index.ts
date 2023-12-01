@@ -2,6 +2,7 @@ import { uuidv7 } from 'uuidv7'
 import * as cdp from './cdp.js'
 import * as playwright from './playwright.js'
 import * as webSocket from './webSocket.js'
+import * as meta from './meta.js'
 import { PACKAGE_NAME, MAX_TASK_CHARS, TOKEN } from './config.js'
 import { type APIPage, type APITestType, type Page, type TestType } from './types.js'
 import {
@@ -33,7 +34,8 @@ export const ai = async (task: string | string[], config: { page: APIPage, test:
   return new Promise((resolve, reject) => {
     test.step(`${PACKAGE_NAME}.ai '${task}'`, async () => {
       if (!TOKEN) {
-        reject(makeErrorMessage('The $ZEROSTEP_TOKEN environment variable must be defined to execute ai steps. You can '
+        reject(makeErrorMessage('The $ZEROSTEP_TOKEN environment variable or a zerostep.config.json file with a '
+          + '"TOKEN" field must be defined to execute ai steps. You can '
           + 'find your token or sign up for an account at https://app.zerostep.com'
         ))
         return
@@ -88,7 +90,7 @@ export const aiFixture = (test: APITestType) => {
 }
 
 const makeErrorMessage = (message: string, taskId?: string) => {
-  const prefix = `${PACKAGE_NAME}.error '${message}'.`
+  const prefix = `${PACKAGE_NAME}.error '${message}'. Version:${meta.getVersion()}`
   if (taskId) {
     return prefix + ` TaskId:${taskId}`
   } else {
@@ -103,6 +105,7 @@ const sendTaskStartMessage = async (page: Page, task: string, taskId: string, op
   const snapshot = await playwright.getSnapshot(page)
   const message: TaskStartZeroStepMessage = {
     type: 'task-start',
+    packageVersion: meta.getVersion(),
     taskId,
     task,
     snapshot,
@@ -118,6 +121,7 @@ const sendTaskStartMessage = async (page: Page, task: string, taskId: string, op
 const sendCommandResolveMessage = async (index: number, taskId: string, result: any) => {
   const message: CommandResponseZeroStepMessage = {
     type: 'command-response',
+    packageVersion: meta.getVersion(),
     taskId,
     index,
     result: result === undefined || result === null ? "null" : JSON.stringify(result),
