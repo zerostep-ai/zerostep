@@ -2,6 +2,11 @@
 
 This document outlines the steps to be followed for releasing new versions of ZeroStep.
 
+## Version Branches
+
+- Each release is a set of changes collected in a version branch named for the next
+  version `x.y.z`. Pull requests should be opened against this branch.
+
 ## Prerequisites
 
 - Ensure you have the latest codebase from the main branch.
@@ -11,7 +16,7 @@ This document outlines the steps to be followed for releasing new versions of Ze
 
 ### 0. Regression Test
 
-- On your local machine, switch to the main branch and pull the latest changes.
+- On your local machine, switch to the version branch and pull the latest changes.
 - All provided example tests must work before releasing. Run the tests in the `examples/` directory
   and verify they all pass.
 
@@ -25,7 +30,16 @@ This document outlines the steps to be followed for releasing new versions of Ze
 - List down the changes made, bugs fixed, or any enhancements.
 - Commit the changes with a message like `bump version to x.y.z`.
 
-### 3. Create Git Tag
+### 3. Merge to `main`
+
+- Once the package and CHANGELOG have been updated, open a pull request to merge the version
+  branch into main
+- Then pull down the latest version of main
+  ```
+  git checkout main && git pull
+  ```
+
+### 4. Create Git Tag
 
 - Tag the current commit with the new version number.
   ```
@@ -40,14 +54,14 @@ This document outlines the steps to be followed for releasing new versions of Ze
   git push origin main
   ```
 
-### 4. Run Release Script
+### 5. Run Release Script
 
 - Execute the existing release script which builds and publishes to npm.
   ```
   npm run release
   ```
 
-### 5. Create GitHub Release
+### 6. Create GitHub Release
 
 - Go to the ["Draft New Release" page](https://github.com/zerostep-ai/zerostep/releases/new).
 - Select the tag `v[x.y.z]` you just pushed.

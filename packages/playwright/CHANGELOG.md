@@ -4,6 +4,16 @@ Documentation on notable changes to the package and release notes
 
 ---
 
+## [0.1.4](https://www.npmjs.com/package/@zerostep/playwright/v/0.1.4) - 12-01-2023
+
+**What's New**
+
+- Adds support for a `zerostep.config.json` file at the root that can store the TOKEN
+- Improves interactions with `ElementHandle` in `ShadowRoot`
+- Include package version information in error messages
+
+---
+
 ## [0.1.3](https://www.npmjs.com/package/@zerostep/playwright/v/0.1.3) - 11-28-2023
 
 **What's New**
