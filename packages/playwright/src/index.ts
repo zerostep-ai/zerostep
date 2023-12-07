@@ -213,7 +213,7 @@ const executeCommand = async (page: Page, command: CommandRequestZeroStepMessage
     case 'hoverElement':
       return await playwright.hoverCDPElement(page, command.arguments as { id: string })
     case 'scrollElement':
-      return await playwright.scrollCDPElement(page, command.arguments as { id: string, target: ScrollType })
+      return await cdp.scrollElement(page, command.arguments as { id: string, target: ScrollType })
 
     // Actions using Location
     case 'clickLocation':

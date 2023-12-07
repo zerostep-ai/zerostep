@@ -1,4 +1,4 @@
-import type { Page } from './types.js'
+import type { Page, ScrollType } from './types.js'
 import { WEBDRIVER_ELEMENT_KEY } from './config.js'
 
 let cdpSessionByPage = new Map<Page, CDPSession>()
@@ -59,6 +59,33 @@ export const get = async (page: Page, args: { url: string }) => {
   const cdpSession = await getCDPSession(page)
   await cdpSession.send('Page.navigate', {
     url: args.url
+  })
+}
+
+export const scrollElement = async (page: Page, args: { id: string, target: ScrollType }) => {
+  await runFunctionOn(page, {
+    functionDeclaration: `function() {
+      const element = this
+
+      // The element height should be defined, but if it somehow isn't pick a reasonable default
+      const elementHeight = element.clientHeight ?? 720
+      // For relative scrolls, attempt to scroll by 75% of the element height
+      const relativeScrollDistance = 0.75 * elementHeight
+
+      switch (evalArgs.target) {
+        case 'top':
+          return element.scrollTo({ top: 0 })
+        case 'bottom':
+          return element.scrollTo({ top: element.scrollHeight })
+        case 'up':
+          return element.scrollBy({ top: -relativeScrollDistance })
+        case 'down':
+          return element.scrollBy({ top: relativeScrollDistance })
+        default:
+          throw Error('Unsupported scroll target ${args.target}')
+      }
+    }`,
+    backendNodeId: parseInt(args.id),
   })
 }
 
