@@ -1,4 +1,4 @@
-import { type Page } from './types.js'
+import type { Page } from './types.js'
 import { WEBDRIVER_ELEMENT_KEY } from './config.js'
 
 let cdpSessionByPage = new Map<Page, CDPSession>()
@@ -62,19 +62,21 @@ export const get = async (page: Page, args: { url: string }) => {
   })
 }
 
-export const runFunctionOn = async (page: Page, args: { functionDeclaration: string, objectId: string }) => {
+export const runFunctionOn = async (page: Page, args: { functionDeclaration: string, backendNodeId: number }) => {
   const cdpSession = await getCDPSession(page)
+  const { object: { objectId } } = await cdpSession.send('DOM.resolveNode', { backendNodeId: args.backendNodeId })
   await cdpSession.send('Runtime.callFunctionOn', {
     functionDeclaration: args.functionDeclaration,
-    objectId: args.objectId,
+    objectId,
   })
 }
 
 export const getDOMSnapshot = async (page: Page) => {
   const cdpSession = await getCDPSession(page)
   const returnValue = await cdpSession.send('DOMSnapshot.captureSnapshot', {
-    computedStyles: ['background-color', 'visibility', 'opacity', 'z-index'],
-    includePaintOrder: true
+    computedStyles: ['background-color', 'visibility', 'opacity', 'z-index', 'overflow'],
+    includePaintOrder: true,
+    includeDOMRects: true,
   })
   return returnValue
 }
@@ -86,11 +88,9 @@ export const getLayoutMetrics = async (page: Page) => {
 }
 
 export const clearElement = async (page: Page, args: { id: string }) => {
-  const cdpSession = await getCDPSession(page)
-  const { object: { objectId } } = await cdpSession.send('DOM.resolveNode', { backendNodeId: parseInt(args.id) })
-  await runFunctionOn(page, {
+  return await runFunctionOn(page, {
     functionDeclaration: `function() {this.value=''}`,
-    objectId: objectId!,
+    backendNodeId: parseInt(args.id),
   })
 }
 

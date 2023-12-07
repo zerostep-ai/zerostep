@@ -4,13 +4,13 @@ import * as playwright from './playwright.js'
 import * as webSocket from './webSocket.js'
 import * as meta from './meta.js'
 import { PACKAGE_NAME, MAX_TASK_CHARS, TOKEN } from './config.js'
-import { type APIPage, type APITestType, type Page, type TestType } from './types.js'
-import {
-  type CommandRequestZeroStepMessage,
-  type CommandResponseZeroStepMessage,
-  type TaskCompleteZeroStepMessage,
-  type TaskStartZeroStepMessage,
-  type StepOptions
+import type { APIPage, APITestType, Page, TestType, ScrollType } from './types.js'
+import type {
+  CommandRequestZeroStepMessage,
+  CommandResponseZeroStepMessage,
+  TaskCompleteZeroStepMessage,
+  TaskStartZeroStepMessage,
+  StepOptions
 } from './webSocket.js'
 
 /**
@@ -212,6 +212,8 @@ const executeCommand = async (page: Page, command: CommandRequestZeroStepMessage
       return await playwright.clickAndInputCDPElement(page, command.arguments as { id: string, value: string })
     case 'hoverElement':
       return await playwright.hoverCDPElement(page, command.arguments as { id: string })
+    case 'scrollElement':
+      return await playwright.scrollCDPElement(page, command.arguments as { id: string, target: ScrollType })
 
     // Actions using Location
     case 'clickLocation':
@@ -233,7 +235,7 @@ const executeCommand = async (page: Page, command: CommandRequestZeroStepMessage
 
     // Actions using Script
     case 'scrollPage':
-      return await playwright.scrollPageScript(page, command.arguments as { target: playwright.ScrollType })
+      return await playwright.scrollPageScript(page, command.arguments as { target: ScrollType })
 
     default:
       throw Error(`Unsupported command ${command.name}`)

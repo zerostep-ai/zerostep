@@ -1,3 +1,4 @@
 {
-  "TOKEN": "<drop token here if not using an environment variable>"
+  "TOKEN": "<drop token here if not using an environment variable>",
+  "LOGS_ENABLED": true
 }

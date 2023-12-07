@@ -1,4 +1,4 @@
-import { type Page, type ElementHandle, type Frame } from './types.js'
+import type { Page, ElementHandle, Frame, ScrollType } from './types.js'
 import * as cdp from './cdp.js'
 
 // Actions using CDP Element
@@ -15,6 +15,11 @@ export const clickCDPElement = async (page: Page, args: { id: string }) => {
 export const clickAndInputCDPElement = async (page: Page, args: { id: string, value: string }) => {
   const { centerX, centerY } = await cdp.getContentQuads(page, { backendNodeId: parseInt(args.id) })
   await clickAndInputLocation(page, { x: centerX, y: centerY, value: args.value })
+}
+
+export const scrollCDPElement = async (page: Page, args: { id: string, target: ScrollType }) => {
+  const element = await cdpElementToPlaywrightHandle(page, { backendNodeId: parseInt(args.id) })
+  await scrollElementScript(page, { element, target: args.target })
 }
 
 // Actions using Location
@@ -127,6 +132,28 @@ export const scrollPageScript = async (page: Page, args: { target: ScrollType })
   }, args)
 }
 
+export const scrollElementScript = async (page: Page, args: { element: ElementHandle<Element>, target: ScrollType }) => {
+  await args.element.evaluate((element, evalArgs) => {
+    // The element height should be defined, but if it somehow isn't pick a reasonable default
+    const elementHeight = element.clientHeight ?? 720
+    // For relative scrolls, attempt to scroll by 75% of the element height
+    const relativeScrollDistance = 0.75 * elementHeight
+
+    switch (evalArgs.target) {
+      case 'top':
+        return element.scrollTo({ top: 0 })
+      case 'bottom':
+        return element.scrollTo({ top: element.scrollHeight })
+      case 'up':
+        return element.scrollBy({ top: -relativeScrollDistance })
+      case 'down':
+        return element.scrollBy({ top: relativeScrollDistance })
+      default:
+        throw Error(`Unsupported scroll target ${evalArgs.target}`)
+    }
+  }, args)
+}
+
 // Meta
 export const getViewportMetadata = async (page: Page) => {
   const metadata = await page.evaluate(() => {
@@ -154,6 +181,29 @@ export const getSnapshot = async (page: Page) => {
   ] = await Promise.all([domSnapshotPromise, screenshotPromise, viewportPromise, layoutMetricsPromise])
 
   return { dom, screenshot, viewportWidth, viewportHeight, pixelRatio, layoutMetrics }
+}
+
+export const cdpElementToPlaywrightHandle = async (page: Page, args: { backendNodeId: number }) => {
+  await storeCDPElement(page, args)
+  const element = await getStoredCDPElementRef(page)
+  await clearStoredCDPElementRef(page)
+  return element
+}
+
+export const storeCDPElement = async (page: Page, args: { backendNodeId: number }) => {
+  await cdp.runFunctionOn(page, {
+    functionDeclaration: `function() { window.$$ZEROSTEP_TEMP_NODE = this }`,
+    backendNodeId: args.backendNodeId
+  })
+}
+
+export const getStoredCDPElementRef = async (page: Page) => {
+  const handle = await page.evaluateHandle(() => window['$$ZEROSTEP_TEMP_NODE' as any] as unknown as Element)
+  return handle.asElement()
+}
+
+export const clearStoredCDPElementRef = async (page: Page) => {
+  return await page.evaluateHandle(() => delete window['$$ZEROSTEP_TEMP_NODE' as any])
 }
 
 export const getElementAtLocation = async (
@@ -205,9 +255,3 @@ export const getElementAtLocation = async (
     isCustomElement,
   }
 }
-
-export type ScrollType =
-  | 'up'
-  | 'down'
-  | 'bottom'
-  | 'top'
