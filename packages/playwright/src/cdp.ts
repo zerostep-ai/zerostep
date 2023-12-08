@@ -65,14 +65,23 @@ export const get = async (page: Page, args: { url: string }) => {
 export const scrollElement = async (page: Page, args: { id: string, target: ScrollType }) => {
   await runFunctionOn(page, {
     functionDeclaration: `function() {
-      const element = this
+      let element = this
+      let elementHeight = 0
 
-      // The element height should be defined, but if it somehow isn't pick a reasonable default
-      const elementHeight = element.clientHeight ?? 720
-      // For relative scrolls, attempt to scroll by 75% of the element height
+      switch (element.tagName) {
+        case 'BODY':
+        case 'HTML':
+          element = document.scrollingElement || document.body
+          elementHeight = window.visualViewport?.height ?? 720
+          break
+        default:
+          elementHeight = element.clientHeight ?? 720
+          break
+      }
+
       const relativeScrollDistance = 0.75 * elementHeight
 
-      switch (evalArgs.target) {
+      switch ("${args.target}") {
         case 'top':
           return element.scrollTo({ top: 0 })
         case 'bottom':

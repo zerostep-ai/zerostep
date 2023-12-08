@@ -15,6 +15,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "watch": "tsc --watch",
     "prepublishOnly": "mv README.md tmp.README.md && cp ../../README.md README.md",
     "postpublish": "mv tmp.README.md README.md",
     "release": "npm run build && npm publish --access public"
