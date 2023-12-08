@@ -4,6 +4,14 @@ Documentation on notable changes to the package and release notes
 
 ---
 
+## [0.1.5](https://www.npmjs.com/package/@zerostep/playwright/v/0.1.5) - 12-08-2023
+
+**What's New**
+
+- Can execute scroll commands against specific elements, including those in iframes
+
+---
+
 ## [0.1.4](https://www.npmjs.com/package/@zerostep/playwright/v/0.1.4) - 12-01-2023
 
 **What's New**
