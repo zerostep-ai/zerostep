@@ -89,3 +89,59 @@ test.describe('JSPaint', () => {
     expect(foregroundColor).toEqual('rgba(0,0,0,1)')
   })
 })
+
+test.describe('Reflect', () => {
+  test('can scroll elements to the bottom', async ({ page, ai }) => {
+    await page.goto('https://reflect.run/docs/')
+    await ai('Scroll the sidebar navigation to the bottom')
+
+    const scrollTop = await page.evaluate(() => {
+      return document.querySelector('#docs-left-nav > div')?.scrollTop
+    })
+
+    console.log('scrollTop', scrollTop)
+
+    expect(scrollTop).toBeTruthy()
+  })
+
+  test('can scroll elements to the top', async ({ page, ai }) => {
+    await page.goto('https://reflect.run/docs/')
+    await ai('Scroll the sidebar navigation to the bottom')
+    await ai('Scroll the sidebar navigation to the top')
+
+    const scrollTop = await page.evaluate(() => {
+      return document.querySelector('#docs-left-nav > div')?.scrollTop
+    })
+
+    console.log('scrollTop', scrollTop)
+
+    expect(scrollTop).toBe(0)
+  })
+
+  test('can scroll elements down', async ({ page, ai }) => {
+    await page.goto('https://reflect.run/docs/')
+    await ai('Scroll the sidebar navigation down')
+
+    const scrollTop = await page.evaluate(() => {
+      return document.querySelector('#docs-left-nav > div')?.scrollTop
+    })
+
+    console.log('scrollTop', scrollTop)
+
+    expect(scrollTop).toBeTruthy()
+  })
+
+  test('can scroll elements up', async ({ page, ai }) => {
+    await page.goto('https://reflect.run/docs/')
+    await ai('Scroll the sidebar navigation down')
+    await ai('Scroll the sidebar navigation up')
+
+    const scrollTop = await page.evaluate(() => {
+      return document.querySelector('#docs-left-nav > div')?.scrollTop
+    })
+
+    console.log('scrollTop', scrollTop)
+
+    expect(scrollTop).toBe(0)
+  })
+})

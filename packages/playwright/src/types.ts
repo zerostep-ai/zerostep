@@ -9,3 +9,10 @@ export { type Page, type ElementHandle, type Frame } from '@playwright/test'
 // are only used for typesafety.
 export type APIPage = Pick<Page, 'mouse' | 'keyboard'>
 export type APITestType = Pick<TestType<any, any>, 'step'>
+
+// Step-specific types
+export type ScrollType =
+  | 'up'
+  | 'down'
+  | 'bottom'
+  | 'top'

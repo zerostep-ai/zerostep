@@ -1,4 +1,4 @@
-import { type Page } from './types.js'
+import type { Page, ScrollType } from './types.js'
 import { WEBDRIVER_ELEMENT_KEY } from './config.js'
 
 let cdpSessionByPage = new Map<Page, CDPSession>()
@@ -62,19 +62,57 @@ export const get = async (page: Page, args: { url: string }) => {
   })
 }
 
-export const runFunctionOn = async (page: Page, args: { functionDeclaration: string, objectId: string }) => {
+export const scrollElement = async (page: Page, args: { id: string, target: ScrollType }) => {
+  await runFunctionOn(page, {
+    functionDeclaration: `function() {
+      let element = this
+      let elementHeight = 0
+
+      switch (element.tagName) {
+        case 'BODY':
+        case 'HTML':
+          element = document.scrollingElement || document.body
+          elementHeight = window.visualViewport?.height ?? 720
+          break
+        default:
+          elementHeight = element.clientHeight ?? 720
+          break
+      }
+
+      const relativeScrollDistance = 0.75 * elementHeight
+
+      switch ("${args.target}") {
+        case 'top':
+          return element.scrollTo({ top: 0 })
+        case 'bottom':
+          return element.scrollTo({ top: element.scrollHeight })
+        case 'up':
+          return element.scrollBy({ top: -relativeScrollDistance })
+        case 'down':
+          return element.scrollBy({ top: relativeScrollDistance })
+        default:
+          throw Error('Unsupported scroll target ${args.target}')
+      }
+    }`,
+    backendNodeId: parseInt(args.id),
+  })
+}
+
+export const runFunctionOn = async (page: Page, args: { functionDeclaration: string, backendNodeId: number }) => {
   const cdpSession = await getCDPSession(page)
+  const { object: { objectId } } = await cdpSession.send('DOM.resolveNode', { backendNodeId: args.backendNodeId })
   await cdpSession.send('Runtime.callFunctionOn', {
     functionDeclaration: args.functionDeclaration,
-    objectId: args.objectId,
+    objectId,
   })
 }
 
 export const getDOMSnapshot = async (page: Page) => {
   const cdpSession = await getCDPSession(page)
   const returnValue = await cdpSession.send('DOMSnapshot.captureSnapshot', {
-    computedStyles: ['background-color', 'visibility', 'opacity', 'z-index'],
-    includePaintOrder: true
+    computedStyles: ['background-color', 'visibility', 'opacity', 'z-index', 'overflow'],
+    includePaintOrder: true,
+    includeDOMRects: true,
   })
   return returnValue
 }
@@ -86,11 +124,9 @@ export const getLayoutMetrics = async (page: Page) => {
 }
 
 export const clearElement = async (page: Page, args: { id: string }) => {
-  const cdpSession = await getCDPSession(page)
-  const { object: { objectId } } = await cdpSession.send('DOM.resolveNode', { backendNodeId: parseInt(args.id) })
-  await runFunctionOn(page, {
+  return await runFunctionOn(page, {
     functionDeclaration: `function() {this.value=''}`,
-    objectId: objectId!,
+    backendNodeId: parseInt(args.id),
   })
 }
 
