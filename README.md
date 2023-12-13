@@ -100,7 +100,7 @@ test('I can foo', async ({ ai }) => {
 })
 ```
 
-There is example code in the `/examples/playwright-demo/tests/zerostep-fixtures.spec.ts` file
+There is example code in the `/examples/playwright-demo/tests/zerostep-regression.spec.ts` file
 
 
 ### Supported Browsers
